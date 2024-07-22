@@ -1,0 +1,94 @@
+mode: statefulset
+
+global:
+  imageRegistry: ""
+
+image:
+  repository: "otel/opentelemetry-collector-contrib"
+  tag: "0.105.0"
+
+command:
+  name: "otelcol-contrib"
+
+ports:
+  jaeger-compact:
+    enabled: false
+  jaeger-thrift:
+    enabled: false
+  jaeger-grpc:
+    enabled: false
+  zipkin:
+    enabled: false
+
+statefulset:
+  # volumeClaimTemplates for a statefulset
+  volumeClaimTemplates:
+  - metadata:
+      name: prometheus 
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+  podManagementPolicy: "Parallel"
+  # Controls if and how PVCs created by the StatefulSet are deleted. Available in Kubernetes 1.23+.
+  persistentVolumeClaimRetentionPolicy:
+    enabled: true
+    whenDeleted: Delete
+    whenScaled: Retain
+
+extraVolumeMounts:
+- name: prometheus
+  mountPath: /prometheus/wal
+
+config:
+  exporters:
+    ## Refer to https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/debugexporter for more detailes.
+    debug:
+      verbosity: basic
+      sampling_initial: 2 
+      sampling_thereafter: 1
+#    ## Refer to https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusremotewriteexporter for more details.
+#    prometheusremotewrite:
+#      endpoint: <YOUR_PROMETHEUS_REMOTE_WRITE_URL>
+#      wal: # Enabling the Write-Ahead-Log for the exporter.
+#        directory: /prometheus/wal
+#      add_metric_suffixes: false
+#      external_labels:
+#        cluster: <cluster_name>
+#      # Refer to https://github.com/open-telemetry/opentelemetry-collector/blob/main/config/configtls/README.md#client-configuration for more details
+#      tls:
+#        insecure: true
+#    ## Refer to https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlpexporter for more details
+#    otlp:
+#      ## url of a tracing backend like tempo or jaeger
+#      endpoint: <YOUR_OTLP_URL:4317>
+  processors:
+    batch: {}
+    memory_limiter:
+      # 80% of maximum memory up to 2G
+      limit_mib: 1500
+      # 25% of limit up to 2G
+      spike_limit_mib: 512
+      check_interval: 5s
+  receivers:
+    ## Only keep the otlp receiver in the default values
+    jaeger: null
+    prometheus: null
+    zipkin: null
+  service:
+    pipelines:
+      traces:
+        receivers: [ otlp ]
+        processors: [ memory_limiter, batch ]
+        exporters:
+          # - otlp
+          - debug
+      metrics:
+        receivers: [ otlp ]
+        processors: [ memory_limiter, batch ]
+        exporters:
+          # - prometheusremotewrite
+          - debug
+      logs: null
