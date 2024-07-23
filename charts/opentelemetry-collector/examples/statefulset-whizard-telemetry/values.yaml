@@ -72,6 +72,7 @@ config:
   exporters:
     ## Refer to https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/debugexporter for more detailes.
     debug:
+      #verbosity: detailed
       verbosity: basic
       sampling_initial: 2 
       sampling_thereafter: 1
