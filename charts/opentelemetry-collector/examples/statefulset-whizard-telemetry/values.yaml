@@ -10,6 +10,9 @@ image:
 command:
   name: "otelcol-contrib"
 
+service:
+  type: NodePort
+
 ports:
   otlp:
     enabled: true
