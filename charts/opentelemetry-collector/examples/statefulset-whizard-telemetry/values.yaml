@@ -91,6 +91,8 @@ config:
 #    otlp:
 #      ## url of a tracing backend like tempo or jaeger
 #      endpoint: <YOUR_OTLP_URL:4317>
+#      headers:
+#        x-scope-orgid: whizard-tracing-for-ks
   processors:
     batch: {}
     memory_limiter:
@@ -99,6 +101,11 @@ config:
       # 25% of limit up to 2G
       spike_limit_mib: 512
       check_interval: 5s
+    attributes:
+      actions:
+        - key: whizard.cluster.name
+          action: insert
+          value: "<cluster-name>"
   receivers:
     ## Only keep the otlp receiver in the default values
     jaeger: null
@@ -108,13 +115,13 @@ config:
     pipelines:
       traces:
         receivers: [ otlp ]
-        processors: [ memory_limiter, batch ]
+        processors: [ memory_limiter, batch, attributes ]
         exporters:
           # - otlp
           - debug
       metrics:
         receivers: [ otlp ]
-        processors: [ memory_limiter, batch ]
+        processors: [ memory_limiter, batch, attributes ]
         exporters:
           # - prometheusremotewrite
           - debug
