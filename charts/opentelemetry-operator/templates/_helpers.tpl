@@ -145,8 +145,99 @@ Return the name of the cert-manager.io/inject-ca-from annotation for webhooks an
 {{- end }}
 
 {{/*
+Base template for building docker image reference
+*/}}
+{{- define "baseImage" }}
+{{- $registry := .global.imageRegistry | default .service.registry | default "" -}}
+{{- $repository := .service.repository | default "" -}}
+{{- $ref := printf ":%s" (.service.tag | default .defaultVersion | toString) -}}
+{{- printf "%s/%s%s" $registry $repository $ref -}}
+{{- end -}}
+
+{{/*
 The image to use for opentelemetry-operator.
 */}}
 {{- define "opentelemetry-operator.image" -}}
-{{- printf "%s:%s" .Values.manager.image.repository (default .Chart.AppVersion .Values.manager.image.tag) }}
-{{- end }}
+{{- $dict := dict "service" .Values.manager.image "global" .Values.global "defaultVersion" .Chart.AppVersion -}}
+{{- include "baseImage" $dict -}}
+{{- end -}}
+
+{{/*
+The image to use for opentelemetry collector.
+*/}}
+{{- define "opentelemetry-collector.image" -}}
+{{- $dict := dict "service" .Values.manager.collectorImage "global" .Values.global "defaultVersion" .Chart.AppVersion -}}
+{{- include "baseImage" $dict -}}
+{{- end -}}
+
+{{/*
+The image to use for opentelemetry operator opamp bridge.
+*/}}
+{{- define "opentelemetry-operator.opampBridge.image" -}}
+{{- $dict := dict "service" .Values.manager.opampBridgeImage "global" .Values.global "defaultVersion" .Chart.AppVersion -}}
+{{- include "baseImage" $dict -}}
+{{- end -}}
+
+{{/*
+The image to use for opentelemetry operator target allocator.
+*/}}
+{{- define "opentelemetry-operator.targetAllocator.image" -}}
+{{- $dict := dict "service" .Values.manager.targetAllocatorImage "global" .Values.global "defaultVersion" .Chart.AppVersion -}}
+{{- include "baseImage" $dict -}}
+{{- end -}}
+
+{{/*
+The image to use for opentelemetry operator java autoInstrumentation.
+*/}}
+{{- define "opentelemetry-operator.autoInstrumentation.java.image" -}}
+{{- $dict := dict "service" .Values.manager.autoInstrumentationImage.java "global" .Values.global "defaultVersion" "latest" -}}
+{{- include "baseImage" $dict -}}
+{{- end -}}
+
+{{/*
+The image to use for opentelemetry operator nodejs autoInstrumentation.
+*/}}
+{{- define "opentelemetry-operator.autoInstrumentation.nodejs.image" -}}
+{{- $dict := dict "service" .Values.manager.autoInstrumentationImage.nodejs "global" .Values.global "defaultVersion" "latest" -}}
+{{- include "baseImage" $dict -}}
+{{- end -}}
+
+{{/*
+The image to use for opentelemetry operator python autoInstrumentation.
+*/}}
+{{- define "opentelemetry-operator.autoInstrumentation.python.image" -}}
+{{- $dict := dict "service" .Values.manager.autoInstrumentationImage.python "global" .Values.global "defaultVersion" "latest" -}}
+{{- include "baseImage" $dict -}}
+{{- end -}}
+
+{{/*
+The image to use for opentelemetry operator dotnet autoInstrumentation.
+*/}}
+{{- define "opentelemetry-operator.autoInstrumentation.dotnet.image" -}}
+{{- $dict := dict "service" .Values.manager.autoInstrumentationImage.dotnet "global" .Values.global "defaultVersion" "latest" -}}
+{{- include "baseImage" $dict -}}
+{{- end -}}
+
+{{/*
+The image to use for opentelemetry operator apacheHttpd autoInstrumentation.
+*/}}
+{{- define "opentelemetry-operator.autoInstrumentation.apacheHttpd.image" -}}
+{{- $dict := dict "service" .Values.manager.autoInstrumentationImage.apacheHttpd "global" .Values.global "defaultVersion" "latest" -}}
+{{- include "baseImage" $dict -}}
+{{- end -}}
+
+{{/*
+The image to use for opentelemetry operator go autoInstrumentation.
+*/}}
+{{- define "opentelemetry-operator.autoInstrumentation.go.image" -}}
+{{- $dict := dict "service" .Values.manager.autoInstrumentationImage.go "global" .Values.global "defaultVersion" "latest" -}}
+{{- include "baseImage" $dict -}}
+{{- end -}}
+
+{{/*
+The kube rbac proxy image.
+*/}}
+{{- define "kubeRBACProxy.image" -}}
+{{- $dict := dict "service" .Values.kubeRBACProxy.image "global" .Values.global "defaultVersion" "latest" -}}
+{{- include "baseImage" $dict -}}
+{{- end -}}

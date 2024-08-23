@@ -48,31 +48,32 @@ spec:
             - --webhook-port={{ .Values.manager.ports.webhookPort }}
             {{- end }}
             {{- if and .Values.manager.collectorImage.repository .Values.manager.collectorImage.tag }}
-            - --collector-image={{ .Values.manager.collectorImage.repository }}:{{ .Values.manager.collectorImage.tag }}
+            - --collector-image={{ include "opentelemetry-collector.image" . }}
             {{- end }}
             {{- if and .Values.manager.opampBridgeImage.repository .Values.manager.opampBridgeImage.tag }}
-            - --operator-opamp-bridge-image={{ .Values.manager.opampBridgeImage.repository }}:{{ .Values.manager.opampBridgeImage.tag }}
+            - --operator-opamp-bridge-image={{ include "opentelemetry-operator.opampBridge.image" . }}
             {{- end }}
             {{- if and .Values.manager.targetAllocatorImage.repository .Values.manager.targetAllocatorImage.tag }}
-            - --target-allocator-image={{ .Values.manager.targetAllocatorImage.repository }}:{{ .Values.manager.targetAllocatorImage.tag }}
+            - --target-allocator-image={{ include "opentelemetry-operator.targetAllocator.image" . }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.java.repository .Values.manager.autoInstrumentationImage.java.tag }}
-            - --auto-instrumentation-java-image={{ .Values.manager.autoInstrumentationImage.java.repository }}:{{ .Values.manager.autoInstrumentationImage.java.tag }}
+            - --auto-instrumentation-java-image={{ include "opentelemetry-operator.autoInstrumentation.java.image" . }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.nodejs.repository .Values.manager.autoInstrumentationImage.nodejs.tag }}
-            - --auto-instrumentation-nodejs-image={{ .Values.manager.autoInstrumentationImage.nodejs.repository }}:{{ .Values.manager.autoInstrumentationImage.nodejs.tag }}
+            - --auto-instrumentation-nodejs-image={{ include "opentelemetry-operator.autoInstrumentation.nodejs.image" . }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.python.repository .Values.manager.autoInstrumentationImage.python.tag }}
-            - --auto-instrumentation-python-image={{ .Values.manager.autoInstrumentationImage.python.repository }}:{{ .Values.manager.autoInstrumentationImage.python.tag }}
+            - --auto-instrumentation-python-image={{ include "opentelemetry-operator.autoInstrumentation.python.image" . }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.dotnet.repository .Values.manager.autoInstrumentationImage.dotnet.tag }}
-            - --auto-instrumentation-dotnet-image={{ .Values.manager.autoInstrumentationImage.dotnet.repository }}:{{ .Values.manager.autoInstrumentationImage.dotnet.tag }}
+            - --auto-instrumentation-dotnet-image={{ include "opentelemetry-operator.autoInstrumentation.dotnet.image" . }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.go.repository .Values.manager.autoInstrumentationImage.go.tag }}
-            - --auto-instrumentation-go-image={{ .Values.manager.autoInstrumentationImage.go.repository }}:{{ .Values.manager.autoInstrumentationImage.go.tag }}
+            - --auto-instrumentation-go-image={{ include "opentelemetry-operator.autoInstrumentation.go.image" . }}
             {{- end }}
             {{- if and .Values.manager.autoInstrumentationImage.apacheHttpd.repository .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
-            - --auto-instrumentation-apache-httpd-image={{ .Values.manager.autoInstrumentationImage.apacheHttpd.repository }}:{{ .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
+            - --auto-instrumentation-apache-httpd-image={{ include "opentelemetry-operator.autoInstrumentation.apacheHttpd.image" . }}
+            - --auto-instrumentation-nginx-image={{ include "opentelemetry-operator.autoInstrumentation.apacheHttpd.image" . }}
             {{- end }}
             {{- if .Values.manager.featureGates }}
             - --feature-gates={{ .Values.manager.featureGates }}
@@ -139,7 +140,7 @@ spec:
             {{-  if .Values.kubeRBACProxy.extraArgs  }}
             {{- .Values.kubeRBACProxy.extraArgs | toYaml | nindent 12 }}
             {{-  end  }}
-          image: "{{ .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}"
+          image: {{ include "kubeRBACProxy.image" . | quote }}
           name: kube-rbac-proxy
           ports:
             - containerPort: {{ .Values.kubeRBACProxy.ports.proxyPort }}
@@ -152,7 +153,7 @@ spec:
           securityContext: {{ toYaml . | nindent 12 }}
           {{- end }}
         {{- end }}
-      {{- with .Values.imagePullSecrets }}
+      {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -162,7 +163,7 @@ spec:
       {{- with .Values.tolerations }}
       tolerations: {{ toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.nodeSelector }}
+      {{- with .Values.global.nodeSelector }}
       nodeSelector: {{ toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.topologySpreadConstraints }}
